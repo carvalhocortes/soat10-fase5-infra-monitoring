@@ -1,0 +1,110 @@
+#!/bin/bash
+set -euxo pipefail
+
+# Variables rendered by Terraform templatefile()
+ADMIN_PASS='${grafana_admin_password}'
+CLOUDWATCH_UID='${cloudwatch_uid}'
+AWS_REGION='${aws_region}'
+CWAGENT_CONFIG='${cwagent_config}'
+DASHBOARDS_B64_JSON='${dashboards_b64_json}'
+
+retry() { n=0; until [ "$n" -ge 5 ]; do "$@" && break; n=$((n+1)); echo "retry $n..."; sleep 5; done }
+
+retry sudo dnf -y update || true
+retry sudo dnf install -y --allowerasing docker jq curl amazon-cloudwatch-agent || true
+
+systemctl enable --now docker || true
+
+# Create directories for provisioning (host paths mounted into container)
+sudo mkdir -p /etc/grafana/provisioning/datasources
+sudo mkdir -p /etc/grafana/provisioning/dashboards
+sudo mkdir -p /var/lib/grafana/dashboards
+# Ensure data dir owned by Grafana container user (UID 472)
+sudo chown -R 472:472 /var/lib/grafana || true
+
+# CloudWatch datasource (uses EC2 IAM role)
+cat >/etc/grafana/provisioning/datasources/cloudwatch.yaml <<EOF
+apiVersion: 1
+datasources:
+  - name: CloudWatch
+    type: cloudwatch
+    uid: $CLOUDWATCH_UID
+    access: proxy
+    jsonData:
+      defaultRegion: $AWS_REGION
+      authType: default
+      tlsSkipVerify: true
+EOF
+
+# Dashboards provisioning
+cat >/etc/grafana/provisioning/dashboards/dashboards.yaml <<'EOF'
+apiVersion: 1
+providers:
+  - name: 'default'
+    orgId: 1
+    folder: ''
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    options:
+      path: /var/lib/grafana/dashboards
+EOF
+
+# Write dashboards from provided base64 JSON map and enforce CloudWatch UID
+if [ -n "$DASHBOARDS_B64_JSON" ] && [ "$DASHBOARDS_B64_JSON" != "null" ]; then
+  echo "$DASHBOARDS_B64_JSON" | jq -r 'to_entries[] | "\(.key)\n\(.value)"' | while read -r name && read -r b64; do
+    # strip trailing .tmpl if present (avoid bash parameter expansion pitfalls in template)
+    base_name=$(echo "$name" | sed 's/\.tmpl$//')
+    out="/var/lib/grafana/dashboards/$base_name"
+    echo "Installing dashboard $name"
+    echo "$b64" | base64 -d > "$out"
+    # If dashboards have datasource objects of type cloudwatch, enforce UID
+    if jq -e '. | .. | objects | select(has("datasource"))' "$out" >/dev/null 2>&1; then
+      tmp="$out.tmp"
+      jq --arg uid "$CLOUDWATCH_UID" '
+        (.. | objects | select(has("datasource") and (.datasource|type=="object") and ((.datasource.type? // "") == "cloudwatch")) | .datasource.uid) |= $uid
+      ' "$out" > "$tmp" 2>/dev/null && mv "$tmp" "$out" || true
+    fi
+  done
+fi
+
+# Run Grafana container
+docker rm -f grafana || true
+retry docker pull grafana/grafana-oss:latest || true
+docker run -d --name grafana --restart unless-stopped \
+  -p 3000:3000 \
+  -e GF_SECURITY_ADMIN_USER=admin \
+  -e GF_SECURITY_ADMIN_PASSWORD="$ADMIN_PASS" \
+  -v /etc/grafana/provisioning:/etc/grafana/provisioning \
+  -v /var/lib/grafana:/var/lib/grafana \
+  -v /var/lib/grafana/dashboards:/var/lib/grafana/dashboards \
+  grafana/grafana-oss:latest
+
+
+echo "Waiting for Grafana (container) to become healthy on port 3000..."
+# Local healthcheck loop and diagnostics to console log
+for i in $(seq 1 24); do
+  echo "healthcheck attempt $i"
+  if curl -sf http://127.0.0.1:3000/api/health; then
+    echo "Grafana is healthy"
+    break
+  fi
+  sleep 5
+done
+
+if ! curl -sf http://127.0.0.1:3000/api/health; then
+  echo "Grafana failed to report healthy; dumping diagnostics"
+  docker ps -a || true
+  docker logs --tail 200 grafana || true
+  ss -ltnp || true
+fi
+
+# Write CloudWatch Agent config and start service
+sudo mkdir -p /opt/aws/amazon-cloudwatch-agent/bin
+sudo bash -lc 'cat > /opt/aws/amazon-cloudwatch-agent/bin/config.json <<CWEOF
+'"$CWAGENT_CONFIG"'
+CWEOF'
+sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json || true
+systemctl enable --now amazon-cloudwatch-agent || true
+
+echo "Grafana server start attempted on port 3000 (userdata end)"
