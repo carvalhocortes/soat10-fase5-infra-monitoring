@@ -91,8 +91,8 @@ resource "aws_instance" "grafana" {
   user_data = base64encode(templatefile("${path.module}/scripts/grafana-install.sh", {
     grafana_admin_user     = var.grafana_admin_user
     grafana_admin_password = var.grafana_admin_password
-    grafana_port          = var.grafana_port
-    aws_region            = var.aws_region
+    grafana_port           = var.grafana_port
+    aws_region             = var.aws_region
   }))
 
   tags = {

@@ -32,11 +32,11 @@ resource "local_file" "dashboard_provisioning" {
     apiVersion = 1
     providers = [
       {
-        name = "default"
-        type = "file"
-        disableDeletion = false
+        name                  = "default"
+        type                  = "file"
+        disableDeletion       = false
         updateIntervalSeconds = 10
-        allowUiUpdates = true
+        allowUiUpdates        = true
         options = {
           path = "/etc/grafana/dashboards"
         }
