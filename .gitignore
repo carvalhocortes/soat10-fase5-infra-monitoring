@@ -51,3 +51,6 @@ terraform.rc
 
 # Terraform lock files (optional - some teams prefer to commit this)
 .terraform.lock.hcl
+
+# IDE files
+.vscode/
