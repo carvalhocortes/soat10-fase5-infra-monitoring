@@ -44,3 +44,11 @@ terraform.rc
 
 # macOS system files
 .DS_Store
+
+# Terraform generated files from our configuration
+datasource-cloudwatch.yml
+dashboard-provider.yml
+lambda-dashboard.json
+
+# Terraform lock files (optional - some teams prefer to commit this)
+.terraform.lock.hcl

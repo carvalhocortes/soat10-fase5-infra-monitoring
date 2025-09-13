@@ -1,36 +1,48 @@
-variable "AWS_REGION" {
-  description = "Região AWS"
+variable "aws_region" {
+  description = "AWS region for resources"
   type        = string
   default     = "us-west-2"
 }
 
 variable "instance_type" {
-  description = "EC2 instance type"
+  description = "EC2 instance type for Grafana server"
   type        = string
-  default     = "t3.micro"
+  default     = "t3.small"
 }
 
-variable "key_name" {
-  description = "EC2 key pair name for SSH (optional)"
+variable "grafana_admin_user" {
+  description = "Grafana admin username"
   type        = string
-  default     = null
+  default     = "admin"
 }
 
 variable "grafana_admin_password" {
-  description = "Grafana admin password (set a strong value in tfvars for prod)"
+  description = "Grafana admin password"
   type        = string
   default     = "admin"
   sensitive   = true
 }
 
-variable "cloudwatch_uid" {
-  description = "Grafana CloudWatch datasource UID referenced by dashboards"
-  type        = string
-  default     = "cloudwatch-default"
+variable "grafana_port" {
+  description = "Port for Grafana web interface"
+  type        = number
+  default     = 3000
 }
 
-variable "cwagent_metrics_namespace" {
-  description = "CloudWatch Agent metrics namespace"
+variable "allowed_cidr_blocks" {
+  description = "CIDR blocks allowed to access Grafana and SSH"
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
+}
+
+variable "key_name" {
+  description = "Name for the AWS Key Pair"
   type        = string
-  default     = "EC2/GrafanaHost"
+  default     = "grafana-key"
+}
+
+variable "project_name" {
+  description = "Project name for resource naming"
+  type        = string
+  default     = "fiap-fase5-monitoring"
 }

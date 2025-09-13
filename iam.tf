@@ -1,41 +1,64 @@
-resource "aws_iam_role" "grafana_ec2_role" {
-  name = "grafana-ec2-role"
+resource "aws_iam_role" "grafana_role" {
+  name = "${var.project_name}-grafana-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Effect = "Allow"
         Action = "sts:AssumeRole"
+        Effect = "Allow"
         Principal = {
           Service = "ec2.amazonaws.com"
         }
       }
     ]
   })
+
+  tags = {
+    Name = "${var.project_name}-grafana-role"
+  }
 }
 
-resource "aws_iam_role_policy_attachment" "cw_read_only" {
-  role       = aws_iam_role.grafana_ec2_role.name
+resource "aws_iam_role_policy_attachment" "cloudwatch_read_only" {
+  role       = aws_iam_role.grafana_role.name
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchReadOnlyAccess"
 }
 
-resource "aws_iam_role_policy_attachment" "cw_logs_read_only" {
-  role       = aws_iam_role.grafana_ec2_role.name
+resource "aws_iam_role_policy_attachment" "logs_read_only" {
+  role       = aws_iam_role.grafana_role.name
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchLogsReadOnlyAccess"
 }
 
-resource "aws_iam_role_policy_attachment" "cw_agent" {
-  role       = aws_iam_role.grafana_ec2_role.name
-  policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
+resource "aws_iam_role_policy" "grafana_additional_permissions" {
+  name = "${var.project_name}-grafana-additional-policy"
+  role = aws_iam_role.grafana_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ec2:DescribeInstances",
+          "ec2:DescribeInstanceTypes",
+          "ec2:DescribeRegions",
+          "ec2:DescribeAvailabilityZones",
+          "lambda:ListFunctions",
+          "lambda:GetFunction",
+          "rds:DescribeDBInstances",
+          "tag:GetResources"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
 }
 
-resource "aws_iam_role_policy_attachment" "ssm_core" {
-  role       = aws_iam_role.grafana_ec2_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-}
+resource "aws_iam_instance_profile" "grafana_profile" {
+  name = "${var.project_name}-grafana-profile"
+  role = aws_iam_role.grafana_role.name
 
-resource "aws_iam_instance_profile" "grafana" {
-  name = "grafana-ec2-instance-profile"
-  role = aws_iam_role.grafana_ec2_role.name
+  tags = {
+    Name = "${var.project_name}-grafana-profile"
+  }
 }
