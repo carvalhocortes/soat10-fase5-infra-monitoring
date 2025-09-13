@@ -10,10 +10,23 @@ DASHBOARDS_B64_JSON='${dashboards_b64_json}'
 
 retry() { n=0; until [ "$n" -ge 5 ]; do "$@" && break; n=$((n+1)); echo "retry $n..."; sleep 5; done }
 
-retry sudo dnf -y update || true
-retry sudo dnf install -y --allowerasing docker jq curl amazon-cloudwatch-agent || true
+ # Update OS and install prerequisites
+ retry sudo yum -y update || retry sudo dnf -y update || true
+ # Try Amazon Linux 2 docker install via amazon-linux-extras, fallback to dnf/yum
+ if command -v amazon-linux-extras >/dev/null 2>&1; then
+   sudo amazon-linux-extras enable docker || true
+   retry sudo yum install -y docker jq curl amazon-cloudwatch-agent || true
+ else
+   retry sudo dnf install -y --allowerasing docker jq curl amazon-cloudwatch-agent || retry sudo yum install -y docker jq curl amazon-cloudwatch-agent || true
+ fi
 
-systemctl enable --now docker || true
+ # Start container engine (docker) if available; else try podman as docker
+ if systemctl list-unit-files | grep -q '^docker\.service'; then
+   sudo systemctl enable --now docker || true
+ elif command -v podman >/dev/null 2>&1; then
+   sudo systemctl enable --now podman || true
+   sudo ln -sf /usr/bin/podman /usr/bin/docker || true
+ fi
 
 # Create directories for provisioning (host paths mounted into container)
 sudo mkdir -p /etc/grafana/provisioning/datasources
@@ -70,8 +83,8 @@ fi
 
 # Run Grafana container
 docker rm -f grafana || true
-retry docker pull grafana/grafana-oss:latest || true
-docker run -d --name grafana --restart unless-stopped \
+ retry docker pull grafana/grafana-oss:latest || retry podman pull grafana/grafana-oss:latest || true
+ docker run -d --name grafana --restart unless-stopped \
   -p 3000:3000 \
   -e GF_SECURITY_ADMIN_USER=admin \
   -e GF_SECURITY_ADMIN_PASSWORD="$ADMIN_PASS" \

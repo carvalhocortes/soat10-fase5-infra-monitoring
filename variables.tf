@@ -4,11 +4,6 @@ variable "AWS_REGION" {
   default     = "us-west-2"
 }
 
-variable "AWS_ACCOUNT_ID" {
-  type    = string
-  default = "381492156649"
-}
-
 variable "instance_type" {
   description = "EC2 instance type"
   type        = string
@@ -39,23 +34,3 @@ variable "cwagent_metrics_namespace" {
   type        = string
   default     = "EC2/GrafanaHost"
 }
-
-variable "existing_instance_profile_name" {
-  description = "Existing IAM instance profile name to attach to EC2 (e.g., LabRole)"
-  type        = string
-  default     = "LabInstanceProfile"
-}
-
-variable "dashboards_s3_bucket" {
-  description = "S3 bucket to upload dashboards archive (instance will download at boot)"
-  type        = string
-  default     = "postech-soat10-fase5"
-}
-
-variable "dashboards_s3_key" {
-  description = "S3 object key for dashboards archive"
-  type        = string
-  default     = "grafana/dashboards.zip"
-}
-
-

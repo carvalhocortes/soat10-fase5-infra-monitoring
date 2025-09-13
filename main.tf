@@ -17,9 +17,10 @@ data "aws_ami" "amazon_linux" {
   most_recent = true
   owners      = ["amazon"]
 
+  # Use Amazon Linux 2 for broad compatibility with Docker via amazon-linux-extras
   filter {
     name   = "name"
-    values = ["al2023-ami-*-x86_64"]
+    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
   }
 }
 
@@ -75,7 +76,7 @@ resource "aws_instance" "ec2" {
   vpc_security_group_ids = [aws_security_group.ec2.id]
   key_name               = var.key_name
 
-  iam_instance_profile = var.existing_instance_profile_name
+  iam_instance_profile = aws_iam_instance_profile.grafana.name
   user_data_base64     = base64gzip(local.userdata)
 
   tags = {
