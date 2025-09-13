@@ -88,7 +88,7 @@ terraform output grafana_credentials
 
 ### 8. Dashboard Setup (`dashboard.tf`)
 
-- **Lambda Dashboard**: Imported from local `dashboards/aws-lambda.json.tmpl`
+- **Lambda Dashboard**: Imported from local `dashboards/aws-lambda.json.tpl`
 - **Data Source Mapping**: Automatically configured to use CloudWatch
 - **Provisioning**: Dashboard automatically available after deployment
 - **Metrics Included**: Invocations, errors, throttles, duration per function
@@ -183,7 +183,7 @@ ssh -i grafana-key.pem ubuntu@<public-ip>
 ├── dashboard.tf                        # Dashboard provisioning
 ├── outputs.tf                          # Output values
 ├── dashboards/                         # Dashboard templates
-│   └── aws-lambda.json.tmpl            # Lambda monitoring dashboard
+│   └── aws-lambda.json.tpl            # Lambda monitoring dashboard
 └── README.md                           # This documentation
 ```
 

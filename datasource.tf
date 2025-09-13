@@ -1,9 +1,9 @@
 resource "local_file" "cloudwatch_datasource" {
-  content = templatefile("${path.module}/datasource-cloudwatch.yml.tpl", {
+  content = templatefile("${path.module}/templates/datasource-cloudwatch.yml.tpl", {
     aws_region = var.aws_region
   })
 
-  filename = "${path.module}/datasource-cloudwatch.yml"
+  filename = "${path.module}/.build/datasource-cloudwatch.yml"
 }
 
 resource "null_resource" "copy_datasource_config" {
