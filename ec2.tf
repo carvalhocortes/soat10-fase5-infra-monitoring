@@ -89,8 +89,8 @@ resource "aws_instance" "grafana" {
   associate_public_ip_address = true
 
   user_data = base64encode(templatefile("${path.module}/scripts/grafana-install.sh", {
-    grafana_admin_user     = var.grafana_admin_user
-    grafana_admin_password = var.grafana_admin_password
+    GRAFANA_ADMIN_USER     = var.GRAFANA_ADMIN_USER
+    GRAFANA_ADMIN_PASSWORD = var.GRAFANA_ADMIN_PASSWORD
     grafana_port           = var.grafana_port
     aws_region             = var.aws_region
   }))

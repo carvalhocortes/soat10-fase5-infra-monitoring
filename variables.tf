@@ -10,12 +10,12 @@ variable "instance_type" {
   default     = "t3.small"
 }
 
-variable "grafana_admin_user" {
+variable "GRAFANA_ADMIN_USER" {
   description = "Grafana admin username"
   type        = string
 }
 
-variable "grafana_admin_password" {
+variable "GRAFANA_ADMIN_PASSWORD" {
   description = "Grafana admin password"
   type        = string
   sensitive   = true

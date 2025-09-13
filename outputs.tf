@@ -11,8 +11,8 @@ output "grafana_url" {
 output "grafana_credentials" {
   description = "Grafana login credentials"
   value = {
-    username = var.grafana_admin_user
-    password = var.grafana_admin_password
+    username = var.GRAFANA_ADMIN_USER
+    password = var.GRAFANA_ADMIN_PASSWORD
   }
   sensitive = true
 }

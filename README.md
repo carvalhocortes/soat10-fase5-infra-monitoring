@@ -47,7 +47,7 @@ terraform output grafana_credentials
 
 - **aws_region**: us-west-2 (configurable)
 - **instance_type**: t3.small (balanced performance/cost)
-- **grafana_admin_user/password**: admin/admin (configurable)
+- **GRAFANA_ADMIN_USER/password**: admin/admin (configurable)
 - **Security**: CIDR blocks for access control
 
 ### 3. SSH Key Management (`ssh.tf`)

@@ -25,8 +25,8 @@ http_port = ${grafana_port}
 domain = localhost
 
 [security]
-admin_user = ${grafana_admin_user}
-admin_password = ${grafana_admin_password}
+admin_user = ${GRAFANA_ADMIN_USER}
+admin_password = ${GRAFANA_ADMIN_PASSWORD}
 
 [auth.anonymous]
 enabled = false
