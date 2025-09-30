@@ -1,7 +1,6 @@
 terraform {
   backend "s3" {
     bucket = "fiap-terraform-backend"
-
     key    = "github-actions-fiap/infra-monitoring/terraform.tfstate"
 
     region  = "us-west-2"
