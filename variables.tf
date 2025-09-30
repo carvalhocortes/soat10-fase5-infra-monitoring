@@ -13,6 +13,7 @@ variable "instance_type" {
 variable "GRAFANA_ADMIN_USER" {
   description = "Grafana admin username"
   type        = string
+  default     = "admin"
 }
 
 variable "GRAFANA_ADMIN_PASSWORD" {
