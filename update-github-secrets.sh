@@ -10,6 +10,7 @@ export $(grep -v '^\s*#' ./.env | grep -E '^\s*[A-Za-z_][A-Za-z0-9_]*\s*=' | sed
 
 gh secret set AWS_REGION -b"$AWS_REGION"
 
+
 export TF_VAR_GRAFANA_ADMIN_USER="$GRAFANA_ADMIN_USER"
 gh secret set GRAFANA_ADMIN_USER -b"$GRAFANA_ADMIN_USER"
 
