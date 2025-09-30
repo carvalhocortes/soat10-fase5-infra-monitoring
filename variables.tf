@@ -18,7 +18,7 @@ variable "GRAFANA_ADMIN_USER" {
 variable "GRAFANA_ADMIN_PASSWORD" {
   description = "Grafana admin password"
   type        = string
-  sensitive   = true
+  default     = "admin"
 }
 
 variable "grafana_port" {
