@@ -82,7 +82,6 @@ resource "aws_instance" "grafana" {
   instance_type          = var.instance_type
   key_name               = aws_key_pair.grafana_key.key_name
   vpc_security_group_ids = [aws_security_group.grafana_sg.id]
-  iam_instance_profile   = aws_iam_instance_profile.grafana_profile.name
 
   subnet_id = data.aws_subnets.default.ids[0]
 
@@ -98,8 +97,4 @@ resource "aws_instance" "grafana" {
   tags = {
     Name = "${var.project_name}-grafana-server"
   }
-
-  depends_on = [
-    aws_iam_instance_profile.grafana_profile
-  ]
 }

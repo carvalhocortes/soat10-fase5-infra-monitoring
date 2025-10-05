@@ -41,8 +41,3 @@ output "security_group_id" {
   description = "ID of the security group attached to Grafana instance"
   value       = aws_security_group.grafana_sg.id
 }
-
-output "iam_role_arn" {
-  description = "ARN of the IAM role attached to the Grafana instance"
-  value       = aws_iam_role.grafana_role.arn
-}
