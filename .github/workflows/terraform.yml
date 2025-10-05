@@ -87,6 +87,7 @@ jobs:
 
       - name: Terraform Apply
         env:
+          TF_VAR_AWS_ACCOUNT_ID: ${{ secrets.TF_VAR_AWS_ACCOUNT_ID }}
           TF_VAR_GRAFANA_ADMIN_USER: ${{ secrets.GRAFANA_ADMIN_USER }}
           TF_VAR_GRAFANA_ADMIN_PASSWORD: ${{ secrets.GRAFANA_ADMIN_PASSWORD }}
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
