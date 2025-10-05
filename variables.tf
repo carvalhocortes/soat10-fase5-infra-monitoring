@@ -4,6 +4,10 @@ variable "aws_region" {
   default     = "us-west-2"
 }
 
+variable "AWS_ACCOUNT_ID" {
+  type = string
+}
+
 variable "instance_type" {
   description = "EC2 instance type for Grafana server"
   type        = string
